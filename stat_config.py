@@ -29,6 +29,21 @@ def load_config(config_path):
     return config, data
 
 
+def save_config(config_path, config, data):
+    """
+    save config to a json file
+    :param config_path: the path to the config file
+    :param config: the config dict
+    :param data: the data dict
+    """
+    data_path = f'{config_path}.data.json'
+    with open(config_path, mode='w+', encoding='UTF-8') as f:
+        json.dump(config, f, separators=(',', ':'), indent=4, ensure_ascii=False)
+
+    with open(data_path, mode='w+', encoding='UTF-8') as f:
+        json.dump(data, f, separators=(',', ':'), indent=4, ensure_ascii=False)
+
+
 # config={
 #     'Name':'雪莲华4BOSS',
 #     'Chapters':[

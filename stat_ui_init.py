@@ -2,6 +2,7 @@ import os
 
 
 # defines the keys of ui_history
+KEY_CONFIG_PATH = 'config_path'
 KEY_KEYBOARD_USED = 'keyboard_used'
 
 
@@ -18,7 +19,8 @@ class UIHistory:
         else:
             # use default settings
             ui_history = {
-                KEY_KEYBOARD_USED: '',
+                KEY_CONFIG_PATH: '',
+                KEY_KEYBOARD_USED: '键盘',
             }
 
         self.history = ui_history

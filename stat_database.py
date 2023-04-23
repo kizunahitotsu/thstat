@@ -12,7 +12,7 @@ class StatDatabase:
         self.config = config
         self.data = data
 
-    def save(self):
+    def commit(self):
         """
         save the data to the file
         """

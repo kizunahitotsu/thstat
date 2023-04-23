@@ -3,7 +3,9 @@ import stat_config
 from stat_database import StatDatabase
 import time
 import stat_menu
-import ui_init
+import stat_ui_init
+import ctypes
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 
 def ask_for_config(init_info):
@@ -13,7 +15,7 @@ def ask_for_config(init_info):
     :return: a tuple of (config_path, config, data)
     """
     layout = [[sg.Text('Please enter the path to the config file')],
-              [sg.InputText(default_text=init_info.get(ui_init.KEY_KEYBOARD_USED)), sg.FileBrowse()],
+              [sg.InputText(default_text=init_info.get(stat_ui_init.KEY_CONFIG_PATH)), sg.FileBrowse()],
               [sg.Submit(), sg.Cancel()]]
 
     window = sg.Window('thstat', layout)
@@ -28,16 +30,18 @@ def ask_for_config(init_info):
     else:
         config_path = values[0]
         config, data = stat_config.load_config(config_path)
-        init_info.set(ui_init.KEY_KEYBOARD_USED, config_path)
+        init_info.set(stat_ui_init.KEY_CONFIG_PATH, config_path)
         return config_path, config, data
 
 
 def main():
     # load user's past selected values in menus
-    init_info = ui_init.UIHistory()
+    init_info = stat_ui_init.UIHistory()
 
     # load the config file specified by the user
     sg.theme('Gray Gray Gray')
+    # font = ("Courier New", 11)
+    # sg.set_options(font=font)
     result = ask_for_config(init_info)
     if result:
         config_path, config, data = result

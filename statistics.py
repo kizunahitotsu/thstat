@@ -32,13 +32,15 @@ config={
 }
 
 data={
-    'Datas':{
+    'Datas':[
+        {
         'Date':'2023-04-23',
         'Keyboard':'DK68茶轴',
-        '还没想好名字':[
+        'Result':[
             [0,1,1,1,1,0,1],
         ],
-    },
+        },
+    ],
     'Total':[
         0,0,0,0,0,0,0,
     ],
@@ -53,4 +55,4 @@ def test():
         json.dump(data,f,separators=(',',':'),indent=4,ensure_ascii=False)
 
 test()
-#print(time.strftime('%Y-%m-%d',time.localtime()))
+print(time.strftime('%Y-%m-%d',time.localtime()))

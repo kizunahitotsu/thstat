@@ -115,7 +115,6 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
                 continue_flag = False
                 break
             elif event == 'Submit':
-                success_list = [1] * len(chapter_list)  # don't assume the player still have the same outcome
                 break
             elif event in chapter_buttons:
                 chapter_idx = int(event[8:len(event) - 1]) - 1
@@ -126,6 +125,7 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
         if event == 'Submit':
             database.add_game_result(session_idx, success_list)
             database.commit()
+            success_list = [1] * len(chapter_list)  # don't assume the player still have the same outcome
 
 
 def main_menu(init_info, database):

@@ -39,7 +39,7 @@ class StatDatabase:
         :param session_idx: the index of the session
         :param result: the result of the game, a list of 0 (fail) or 1 (capture)
         """
-        self.data['Data'][session_idx]['Result'].append(result)
+        self.data['Data'][session_idx]['Result'].append(result.copy())
         for i in range(len(result)):
             self.data['Total'][i] += 1
 

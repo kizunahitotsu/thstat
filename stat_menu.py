@@ -176,7 +176,6 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
             database.commit()
             success_list = [1] * len(chapter_list)  # don't assume the player still have the same outcome
         elif event == POP_RESULT_STR:
-            print('popping result')
             database.pop_game_result(session_idx)
             database.commit()
 

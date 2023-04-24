@@ -1,24 +1,17 @@
 import matplotlib
 from matplotlib import pyplot as plt
 from io import BytesIO
+import stat_database
 
 
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
 
-def plt_im_bytes_session_capture_rates(database, session):
-    chapters_list = database.config['Chapters']
-    capture_list = [0] * len(chapters_list)
-    total_list = [0] * len(chapters_list)
-    for i, run in enumerate(session['Result']):
-        for j, success in enumerate(run):
-            capture_list[j] += success
-            total_list[j] += 1
-    capture_rate = [capture_list[i] / total_list[i] if total_list[i] > 0 else 0 for i in range(len(capture_list))]
-    plt.bar(chapters_list, capture_rate)
-    plt.xlabel('section')
-    plt.ylabel('NN rate')
+def plt_im_bytes_session_capture_rates(chapters_list, session_rate):
+    plt.bar(chapters_list, session_rate)
+    plt.xlabel(u'段落')
+    plt.ylabel('NN率')
     plt.ylim(0., 1.)
     with BytesIO() as output:
         plt.savefig(output, format='PNG')

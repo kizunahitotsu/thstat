@@ -228,17 +228,19 @@ def main_menu(init_info, database):
         STAT_STR = 'See game statistics'
         layout = [[sg.Text(f'Current date is {date_str}')]]
 
+        legal_values_dict = {}
         for key in database.get_all_dropdown_attribute_name():
             attr = database.config[key]
             ui_save_key = attr['SaveKey']
-            values = attr['Values']
+            legal_values_dict[key] = attr['Values']
 
             if init_info.has(ui_save_key):
                 default_value = init_info.get(ui_save_key)
             else:
-                default_value = values[0]
+                default_value = legal_values_dict[key][0]
             layout.append([sg.Text(attr['DisplayText']),
-                           sg.DropDown(values, key=f'-{key}-', default_value=default_value)])
+                           sg.DropDown(legal_values_dict[key], key=f'-dropdown-{key}-',
+                                       default_value=default_value, enable_events=True, readonly=True)])
 
         layout.append([[sg.Button(CREATE_STR)],
                        [sg.Text('OR')],
@@ -251,10 +253,13 @@ def main_menu(init_info, database):
                 continue_flag = False
                 break
             if event in [CREATE_STR, STAT_STR]:
+                attributes = {}
                 for key in database.get_all_dropdown_attribute_name():
                     attr = database.config[key]
                     ui_save_key = attr['SaveKey']
-                    init_info.set(ui_save_key, values[f'-{key}-'])
+                    init_info.set(ui_save_key, values[f'-dropdown-{key}-'])
+                    attributes[key] = values[f'-dropdown-{key}-']
+                database.set_current_dropdown_attributes(attributes)
                 break
         window.close()
 

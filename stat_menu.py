@@ -109,12 +109,12 @@ def show_session_stat_menu(init_info, database, session_idx):
             background_color='white',
             key=f'-GRAPH-{stage_id}-',
         )
-        graph_layout = [[graph],
-                        [sg.Button('Back')]]
+        graph_layout = [[graph]]
         horizontal_layout = [[sg.Column(stat_layouts[stage_id]), sg.Column(graph_layout)]]
         layout.append([sg.Tab(stage_id,  horizontal_layout)])
 
-    layout = [[sg.TabGroup(layout)]]
+    layout = [[sg.TabGroup(layout)],
+              [sg.Button('Back')]]
 
     window = sg.Window('thstat', layout, finalize=True)
     for stage_id in config_stages:
@@ -149,6 +149,10 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
     """
     POP_RESULT_STR = 'Pop Last Result'
     config_stages = database.get_config_stage_dict()
+    config_stages_list = list(config_stages.keys())
+    default_tab_key = f'-{config_stages_list[0]}-'
+
+    BUTTON_SIZE = (20, 1)
 
     continue_flag = True
     success_dict = get_default_success_dict(config_stages)
@@ -164,18 +168,25 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
             pass_fail_layout = []
             for i in range(len(chapters_list)):
                 button_text = f'{stage_id}-{i + 1}: {chapters_list[i]}'
+                button_text = button_text + ' ' * (BUTTON_SIZE[0] - len(button_text))
                 button_key = f'-{stage_id}-{i}-'
 
                 if success_list[i] == 1:
                     display_text = sg.Text('Passed', text_color='green')
                 else:
                     display_text = sg.Text('Failed', text_color='red')
-                pass_fail_layout.append([sg.Button(button_text, key=button_key), display_text])
+                pass_fail_layout.append([sg.Button(button_text, key=button_key, size=BUTTON_SIZE,), display_text])
 
             # display the session statistics as well
             stat_layout = stat_layouts[stage_id]
 
-            row = [sg.Tab(stage_id, [[sg.Column(pass_fail_layout)], [sg.Column(stat_layout)]])]
+            # merge pass_fail_layout and stat_layout
+            new_layout = []
+            for i in range(len(pass_fail_layout)):
+                new_layout.append(pass_fail_layout[i] + stat_layout[i])
+
+            tab_key = f'-{stage_id}-'
+            row = [sg.Tab(stage_id, new_layout, key=tab_key)]
             tab_group_layout.append(row)
 
         # display the current results in this session
@@ -187,11 +198,15 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
         if len(results) != 0:
             result_layout.append([sg.Button(POP_RESULT_STR)])
 
+        tab_group = sg.TabGroup(tab_group_layout, enable_events=True, key='-TABGROUP-')
         layout = [[sg.Column(result_layout),
-                   sg.Column([[sg.TabGroup(tab_group_layout)],
+                   sg.Column([[tab_group],
                               [sg.Button('Submit'), sg.Button('Finish')]])]]
 
-        window = sg.Window('thstat', layout)
+        window = sg.Window('thstat', layout, finalize=True)
+        print('selecting ', default_tab_key)
+        window[f'{default_tab_key}'].select()
+
         while True:
             event, values = window.read()
             if event in [sg.WIN_CLOSED, 'Finish']:  # if user closes window or clicks cancel
@@ -199,9 +214,13 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
                 break
             elif event == 'Submit':
                 break
+            elif event == '-TABGROUP-':
+                default_tab_key = values['-TABGROUP-']
+                print(default_tab_key)
+                continue
             elif event.startswith('-') and event.endswith('-'):
-                # print(event, event.split('-'))
-                stage_id, chapter_idx = event.split('-')[1:3]
+                substrs = event.split('-')
+                stage_id, chapter_idx = substrs[1:3]
                 chapter_idx = int(chapter_idx)
                 success_dict[stage_id][chapter_idx] = 1 - success_dict[stage_id][int(chapter_idx)]
                 break  # refresh the window

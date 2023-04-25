@@ -167,13 +167,15 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
 
         # create tab group
         tab_group_layout = []
+        stage_num = 0
         for stage_id in config_stages:
+            stage_num += 1
             # button list for pass/fail
             chapters_list = config_stages[stage_id]
             success_list = success_dict[stage_id]
             pass_fail_layout = []
             for i in range(len(chapters_list)):
-                button_text = f'{stage_id}-{i + 1}: {chapters_list[i]}'
+                button_text = f'Chapter {i + 1}: {chapters_list[i]}'
                 button_text = button_text + ' ' * (BUTTON_SIZE[0] - len(button_text))
                 button_key = f'-{stage_id}-{i}-'
 

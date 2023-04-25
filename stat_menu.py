@@ -22,8 +22,7 @@ def create_session_text_statistics_layout(database, session_idx):
                 f'({sessions_rate[session_idx][i] * 100:.2f}%) '
                 f'{sessions_cap[session_idx][i]}/{sessions_attempt[session_idx][i]} | '
                 f'total ({total_rate[i] * 100:.2f}%) '
-                f'{total_cap[i]}/{total_attempt[i]} | '
-                f'{chapter}')])
+                f'{total_cap[i]}/{total_attempt[i]}')])
         layouts[stage_id] = stat_layout
     return layouts
 
@@ -93,6 +92,13 @@ def show_session_stat_menu(init_info, database, session_idx):
     stat_layouts = create_session_text_statistics_layout(database, session_idx)
 
     config_stages = database.get_config_stage_dict()
+    # add the stage name to the layout
+    for stage_id in config_stages:
+        chapters_list = config_stages[stage_id]
+        stage_layout = stat_layouts[stage_id]
+        for i in range(len(stage_layout)):
+            row = stage_layout[i]
+            row.append(sg.Text(chapters_list[i]))
     im_data_dict = {}
     for stage_id in config_stages:
         chapters_list = config_stages[stage_id]

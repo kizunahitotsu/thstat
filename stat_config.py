@@ -3,6 +3,8 @@ import re
 import time
 import json
 
+import constants
+
 
 def load_config(config_path):
     """
@@ -17,8 +19,7 @@ def load_config(config_path):
     # ensure data file exists
     if not os.path.exists(data_path):
         data = {
-            'Data': [],
-            'Total': [0] * len(config['Chapters']),
+            constants.DATA_DATA: [],
         }
         with open(data_path, mode='w+', encoding='UTF-8') as f:
             json.dump(data, f, separators=(',', ':'), indent=4, ensure_ascii=False)

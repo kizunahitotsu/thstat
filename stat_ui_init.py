@@ -1,11 +1,6 @@
 import os
 
 
-# defines the keys of ui_history
-KEY_CONFIG_PATH = 'config_path'
-KEY_KEYBOARD_USED = 'keyboard_used'
-
-
 class UIHistory:
     def __init__(self):
         if os.path.exists('ui.init'):
@@ -18,12 +13,12 @@ class UIHistory:
                 ui_history[key] = value
         else:
             # use default settings
-            ui_history = {
-                KEY_CONFIG_PATH: '',
-                KEY_KEYBOARD_USED: '键盘',
-            }
+            ui_history = {}
 
         self.history = ui_history
+
+    def has(self, key):
+        return key in self.history
 
     def get(self, key):
         return self.history[key]

@@ -5,6 +5,7 @@ import time
 import stat_menu
 import stat_ui_init
 import ctypes
+import constants
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 
@@ -14,8 +15,12 @@ def ask_for_config(init_info):
     :param init_info: the ui initialization info
     :return: a tuple of (config_path, config, data)
     """
+    if init_info.has(constants.KEY_CONFIG_PATH):
+        default_text = init_info.get(constants.KEY_CONFIG_PATH)
+    else:
+        default_text = ''
     layout = [[sg.Text('Please enter the path to the config file')],
-              [sg.InputText(default_text=init_info.get(stat_ui_init.KEY_CONFIG_PATH)), sg.FileBrowse()],
+              [sg.InputText(default_text=default_text), sg.FileBrowse()],
               [sg.Submit(), sg.Cancel()]]
 
     window = sg.Window('thstat', layout)
@@ -30,7 +35,7 @@ def ask_for_config(init_info):
     else:
         config_path = values[0]
         config, data = stat_config.load_config(config_path)
-        init_info.set(stat_ui_init.KEY_CONFIG_PATH, config_path)
+        init_info.set(constants.KEY_CONFIG_PATH, config_path)
         return config_path, config, data
 
 

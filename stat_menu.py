@@ -160,7 +160,7 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
     config_stages_list = list(config_stages.keys())
     default_tab_key = f'-{config_stages_list[0]}-'
 
-    BUTTON_SIZE = (20, 1)
+    CHAPTER_NAME_SIZE = (22, 1)
 
     continue_flag = True
     success_dict = get_default_success_dict(config_stages)
@@ -177,15 +177,16 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
             success_list = success_dict[stage_id]
             pass_fail_layout = []
             for i in range(len(chapters_list)):
-                button_text = f'Chapter {i + 1}: {chapters_list[i]}'
-                button_text = button_text + ' ' * (BUTTON_SIZE[0] - len(button_text))
+                chapter_text = f'Chapter {i + 1}: {chapters_list[i]}'
                 button_key = f'-{stage_id}-{i}-'
 
                 if success_list[i] == 1:
-                    display_text = sg.Text('Passed', text_color='green')
+                    display_text = sg.Text('Passed', text_color='green', size=(6, 1))
                 else:
-                    display_text = sg.Text('Failed', text_color='red')
-                pass_fail_layout.append([sg.Button(button_text, key=button_key, size=BUTTON_SIZE,), display_text])
+                    display_text = sg.Text('Failed!', text_color='red', size=(6, 1))
+                pass_fail_layout.append([sg.Button('Change', key=button_key),
+                                         sg.Text(chapter_text, size=CHAPTER_NAME_SIZE),
+                                         display_text])
 
             # display the session statistics as well
             stat_layout = stat_layouts[stage_id]
@@ -214,7 +215,6 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
                               [sg.Button('Submit'), sg.Button('Finish')]])]]
 
         window = sg.Window('thstat', layout, finalize=True)
-        print('selecting ', default_tab_key)
         window[f'{default_tab_key}'].select()
 
         while True:

@@ -1,0 +1,36 @@
+{
+    "Name":"雪莲华4BOSS",
+    "Chapters":{
+        "stage 4":[
+            "1非",
+            "南北",
+            "亡灯",
+            "2非",
+            "曼珠沙华",
+            "双子星",
+            "生命悬线"
+        ],
+        "stage 6":[
+            "1非",
+            "星球冻结",
+            "2非",
+            "生命冻结",
+            "3非",
+            "彼岸归航",
+            "4非",
+            "轮回寂灭",
+            "寒霜亿万劫",
+            "万物之梦终"
+        ]
+    },
+    "Keyboards":{
+        "Type":"SelectFromMainMenuDropdown",
+        "DisplayText":"KeyboardUsed",
+        "SaveKey":"KeyboardUsed",
+        "Values":[
+            "笔记本薄膜",
+            "B820R光轴",
+            "DK68茶轴"
+        ]
+    }
+}

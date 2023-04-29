@@ -3,6 +3,7 @@ import time
 import stat_plot
 import stat_ui_init
 import constants
+import utilities.popup_menu as popup_menu
 
 
 def create_session_text_statistics_layout(database, session_idx):
@@ -72,8 +73,9 @@ def select_session_menu(init_info, database):
                 if event == SHOW_STAT_STR:
                     show_session_stat_menu(init_info, database, session_idx)
                 elif event == REMOVE_SESSION_STR:
-                    database.remove_game_session(session_idx)
-                    database.commit()
+                    if popup_menu.confirm_popup('thstat', 'Are you sure you want to remove this session?'):
+                        database.remove_game_session(session_idx)
+                        database.commit()
             else:
                 print('No session selected. Please select a session.')
 

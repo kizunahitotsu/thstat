@@ -294,5 +294,9 @@ def main_menu(init_info, database):
             session_idx = database.add_game_session(date_str)
             database.commit()
             gameplay_session_creation_menu(init_info, database, session_idx)
+            # if the session is empty, pop it
+            if len(database.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT]) == 0:
+                database.remove_game_session(session_idx)
+                database.commit()
         elif event == STAT_STR:
             select_session_menu(init_info, database)

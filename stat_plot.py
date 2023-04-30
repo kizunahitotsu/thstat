@@ -9,7 +9,7 @@ import stat_database
 
 
 def plt_im_bytes_session_capture_rates(chapters_list, session_rate):
-    plt.bar(chapters_list, session_rate)
+    plt.bar(range(1, len(chapters_list) + 1), session_rate)
     plt.xlabel('session')
     plt.ylabel('NN rate')
     plt.ylim(0., 1.)

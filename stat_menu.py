@@ -294,6 +294,7 @@ def main_menu(init_info, database):
         date_str = time.strftime("%Y-%m-%d", time.localtime())
         CREATE_STR = 'Create a new game session'
         STAT_STR = 'See game statistics'
+        CONTINUE_LAST_STR = 'Continue last game session'
         layout = [[sg.Text(f'Current date is {date_str}')]]
 
         legal_values_dict = {}
@@ -308,9 +309,9 @@ def main_menu(init_info, database):
                 default_value = legal_values_dict[key][0]
             layout.append([sg.Text(attr['DisplayText']),
                            sg.DropDown(legal_values_dict[key], key=f'-dropdown-{key}-',
-                                       default_value=default_value, enable_events=True, readonly=True)])
+                                       default_value=default_value, enable_events=True, readonly=True, size=(20, 1))])
 
-        layout.append([[sg.Button(CREATE_STR)],
+        layout.append([[sg.Button(CREATE_STR), sg.Button(CONTINUE_LAST_STR)],
                        [sg.Text('OR')],
                        [sg.Button(STAT_STR)]])
 
@@ -320,7 +321,7 @@ def main_menu(init_info, database):
             if event in [sg.WIN_CLOSED, 'Cancel']:  # if user closes window or clicks cancel
                 continue_flag = False
                 break
-            if event in [CREATE_STR, STAT_STR]:
+            if event in [CREATE_STR, STAT_STR, CONTINUE_LAST_STR]:
                 attributes = {}
                 for key in database.get_all_dropdown_attribute_name():
                     attr = database.config[key]
@@ -331,9 +332,12 @@ def main_menu(init_info, database):
                 break
         window.close()
 
-        if event == CREATE_STR:
-            session_idx = database.add_game_session(date_str)
-            database.commit()
+        if event in [CREATE_STR, CONTINUE_LAST_STR]:
+            if event == CREATE_STR:
+                session_idx = database.add_game_session(date_str)
+                database.commit()
+            else:
+                session_idx = database.get_last_game_session_idx()
             gameplay_session_creation_menu(init_info, database, session_idx)
             # if the session is empty, pop it
             if len(database.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT]) == 0:

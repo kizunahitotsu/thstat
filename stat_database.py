@@ -160,3 +160,10 @@ class StatDatabase:
         :return: the stage index
         """
         return self.stage_idx_from_id[stage_id]
+
+    def get_last_game_session_idx(self):
+        """
+        get the index of the last game session
+        :return: the index of the last game session
+        """
+        return len(self.data[constants.DATA_DATA]) - 1

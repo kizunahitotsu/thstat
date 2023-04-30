@@ -68,7 +68,7 @@ class StatDatabase:
         remove the last game result from the specified session
         :param session_idx: the index of the session
         """
-        result = self.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT].pop()
+        self.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT].pop()
 
     def aggregate_cap_rates(self, stage_id):
         """
@@ -103,6 +103,34 @@ class StatDatabase:
             total_rate[i] = total_cap[i] / total_attempt[i] if total_attempt[i] > 0 else 0
 
         return (sessions_cap, sessions_attempt, sessions_rate), (total_cap, total_attempt, total_rate)
+
+    def compute_advanced_summary_statistics(self, stages_cap_rates):
+        """
+        compute summary statistics. The statistics include:
+        1. average number of misses of each level and in total
+        2. NN rate of each level and in total
+        :param stages_cap_rates:
+        :return: (level_misses_arr, total_misses), (level_nn_rate_arr, total_nn_rate)
+        """
+        level_misses_arr = []
+        total_misses = 0.
+        level_nn_rate_arr = []
+        total_nn_rate = 1.
+        for stage_id in stages_cap_rates:
+            cap_rates = stages_cap_rates[stage_id]
+            level_misses = 0.
+            level_nn_rate = 1.
+            (sessions_cap, sessions_attempt, sessions_rate), (total_cap, total_attempt, total_rate) = cap_rates
+            for rate in total_rate:
+                level_misses += 1. - rate
+                level_nn_rate *= rate
+
+            level_misses_arr.append(level_misses)
+            total_misses += level_misses
+            level_nn_rate_arr.append(level_nn_rate)
+            total_nn_rate *= level_nn_rate
+
+        return (level_misses_arr, total_misses), (level_nn_rate_arr, total_nn_rate)
 
     def get_config_stage_dict(self):
         """

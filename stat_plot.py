@@ -4,14 +4,14 @@ from io import BytesIO
 import stat_database
 
 
-plt.rcParams['font.sans-serif'] = ['SimHei']
-plt.rcParams['axes.unicode_minus'] = False
+# plt.rcParams['font.sans-serif'] = ['SimHei']
+# plt.rcParams['axes.unicode_minus'] = False
 
 
 def plt_im_bytes_session_capture_rates(chapters_list, session_rate):
     plt.bar(chapters_list, session_rate)
-    plt.xlabel(u'段落')
-    plt.ylabel('NN率')
+    plt.xlabel('session')
+    plt.ylabel('NN rate')
     plt.ylim(0., 1.)
     with BytesIO() as output:
         plt.savefig(output, format='PNG')

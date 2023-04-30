@@ -94,6 +94,7 @@ def show_session_stat_menu(init_info, database, session_idx):
     stat_layouts = create_session_text_statistics_layout(database, session_idx)
 
     config_stages = database.get_config_stage_dict()
+    stages_cap_rates = {}
     # add the stage name to the layout
     for stage_id in config_stages:
         chapters_list = config_stages[stage_id]
@@ -101,13 +102,22 @@ def show_session_stat_menu(init_info, database, session_idx):
         for i in range(len(stage_layout)):
             row = stage_layout[i]
             row.append(sg.Text(chapters_list[i]))
+        cap_rates = database.aggregate_cap_rates(stage_id)
+        stages_cap_rates[stage_id] = cap_rates
+    (level_misses_arr, total_misses), (level_nn_rate_arr, total_nn_rate) = \
+        database.compute_advanced_summary_statistics(stages_cap_rates)
     im_data_dict = {}
     for stage_id in config_stages:
+        stage_idx = database.get_stage_idx_from_id(stage_id)
         chapters_list = config_stages[stage_id]
-        (sessions_cap, sessions_attempt, sessions_rate), (total_cap, total_attempt, total_rate) = database.aggregate_cap_rates(stage_id)
+        (sessions_cap, sessions_attempt, sessions_rate), (total_cap, total_attempt, total_rate) = stages_cap_rates[stage_id]
         im_data = stat_plot.plt_im_bytes_session_capture_rates(chapters_list, sessions_rate[session_idx])
         width, height = im_data[1], im_data[2]
         im_data_dict[stage_id] = im_data
+
+        stat_layout = [[sg.Text(f'Average misses: {level_misses_arr[stage_idx]}')],
+                       [sg.Text(f'Level NN rate: {level_nn_rate_arr[stage_idx]}')]] + \
+            stat_layouts[stage_id]
 
         # reference:https://stackoverflow.com/questions/70474671/pysimplegui-graph-displaying-an-image-directly
         graph = sg.Graph(
@@ -118,10 +128,12 @@ def show_session_stat_menu(init_info, database, session_idx):
             key=f'-GRAPH-{stage_id}-',
         )
         graph_layout = [[graph]]
-        horizontal_layout = [[sg.Column(stat_layouts[stage_id]), sg.Column(graph_layout)]]
+        horizontal_layout = [[sg.Column(stat_layout), sg.Column(graph_layout)]]
         layout.append([sg.Tab(stage_id,  horizontal_layout)])
 
     layout = [[sg.TabGroup(layout)],
+              [sg.Text(f'Full game average misses: {total_misses}')],
+              [sg.Text(f'NN rate: {total_nn_rate}')],
               [sg.Button('Back')]]
 
     window = sg.Window('thstat', layout, finalize=True)

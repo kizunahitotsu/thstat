@@ -164,14 +164,13 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
 
     continue_flag = True
     success_dict = get_default_success_dict(config_stages)
+    quit_location = (len(success_dict), 0)  # initially assume the player does not quit
     while continue_flag:
         stat_layouts = create_session_text_statistics_layout(database, session_idx)
 
         # create tab group
         tab_group_layout = []
-        stage_num = 0
         for stage_id in config_stages:
-            stage_num += 1
             # button list for pass/fail
             chapters_list = config_stages[stage_id]
             success_list = success_dict[stage_id]
@@ -180,13 +179,21 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
                 chapter_text = f'Chapter {i + 1}: {chapters_list[i]}'
                 button_key = f'-{stage_id}-{i}-'
 
-                if success_list[i] == 1:
-                    display_text = sg.Text('Passed', text_color='green', size=(6, 1))
+                stage_idx = database.get_stage_idx_from_id(stage_id)
+                if stage_idx > quit_location[0] or (stage_idx == quit_location[0] and i >= quit_location[1]):
+                    display_text = sg.Text('ESC', text_color='green', size=(6, 1))
+                    pass_fail_layout.append([sg.Button('Re-add', key=button_key, size=(6, 1)),
+                                             sg.Text(chapter_text, size=CHAPTER_NAME_SIZE, text_color='white'),
+                                             display_text])
                 else:
-                    display_text = sg.Text('Failed!', text_color='red', size=(6, 1))
-                pass_fail_layout.append([sg.Button('Change', key=button_key),
-                                         sg.Text(chapter_text, size=CHAPTER_NAME_SIZE),
-                                         display_text])
+                    # display the pass/fail button
+                    if success_list[i] == 1:
+                        display_text = sg.Text('Passed', text_color='green', size=(6, 1))
+                    else:
+                        display_text = sg.Text('Failed!', text_color='red', size=(6, 1))
+                    pass_fail_layout.append([sg.Button('Change', key=button_key, size=(6, 1)),
+                                             sg.Text(chapter_text, size=CHAPTER_NAME_SIZE),
+                                             display_text])
 
             # display the session statistics as well
             stat_layout = stat_layouts[stage_id]
@@ -226,22 +233,42 @@ def gameplay_session_creation_menu(init_info, database, session_idx):
                 break
             elif event == '-TABGROUP-':
                 default_tab_key = values['-TABGROUP-']
-                print(default_tab_key)
                 continue
             elif event.startswith('-') and event.endswith('-'):
                 substrs = event.split('-')
                 stage_id, chapter_idx = substrs[1:3]
+                stage_idx = database.get_stage_idx_from_id(stage_id)
                 chapter_idx = int(chapter_idx)
-                success_dict[stage_id][chapter_idx] = 1 - success_dict[stage_id][int(chapter_idx)]
+
+                if stage_idx > quit_location[0] or (stage_idx == quit_location[0] and chapter_idx >= quit_location[1]):
+                    # if a button on a quitted stage is pressed, then unquit the stage
+                    quit_location = (stage_idx, chapter_idx + 1)
+                    success_dict[stage_id][chapter_idx] = 1
+                elif success_dict[stage_id][chapter_idx] == 1:
+                    success_dict[stage_id][chapter_idx] = 0
+                else:  # success_dict[stage_id][chapter_idx] == 0
+                    quit_location = (stage_idx, chapter_idx)
+                    success_dict[stage_id][chapter_idx] = 1
                 break  # refresh the window
             elif event == POP_RESULT_STR:
                 break
         window.close()
 
         if event == 'Submit':
-            database.add_game_result(session_idx, success_dict)
+            truncated_dict = {}  # handle the case where the player quits in the middle of a game
+            for stage_id in success_dict:
+                stage_idx = database.get_stage_idx_from_id(stage_id)
+                if stage_idx > quit_location[0]:
+                    truncated_dict[stage_id] = []
+                elif stage_idx == quit_location[0]:
+                    truncated_dict[stage_id] = success_dict[stage_id][:quit_location[1]]
+                else:
+                    truncated_dict[stage_id] = success_dict[stage_id].copy()
+
+            database.add_game_result(session_idx, truncated_dict)
             database.commit()
             success_dict = get_default_success_dict(config_stages)  # don't assume the player still have the same outcome
+            quit_location = (len(success_dict), 0)  # reset the quit location
         elif event == POP_RESULT_STR:
             database.pop_game_result(session_idx)
             database.commit()

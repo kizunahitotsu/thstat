@@ -13,6 +13,10 @@ class StatDatabase:
         self.config = config
         self.data = data
 
+        self.stage_idx_from_id = {}
+        for stage_id in config[constants.CONFIG_CHAPTERS]:
+            stage_idx = len(self.stage_idx_from_id)
+            self.stage_idx_from_id[stage_id] = stage_idx
         self.dropdown_attribute_name = []
         self.current_dropdown_attributes = {}
         for key in config.keys():
@@ -29,7 +33,7 @@ class StatDatabase:
 
     def add_game_session(self, date_str):
         """
-        add a data to the database
+        record a game session to the database
         :param date_str: the date of the game session
         :return: an index to the newly added session
         """
@@ -120,3 +124,11 @@ class StatDatabase:
         :param attributes: a dictionary of attributes {SaveKey = value}
         """
         self.current_dropdown_attributes = attributes.copy()
+
+    def get_stage_idx_from_id(self, stage_id):
+        """
+        get the stage index from the stage id
+        :param stage_id: the stage id
+        :return: the stage index
+        """
+        return self.stage_idx_from_id[stage_id]

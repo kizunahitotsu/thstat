@@ -98,7 +98,7 @@ def plt_im_bytes_moving_average(chapters_list, stage_id, results, sigma, chapter
 
     # reference: https://stackoverflow.com/questions/12608788/changing-the-tick-frequency-on-the-x-or-y-axis
     plt.xlabel('Time')
-    plt.ylabel('NN rate')
+    plt.ylabel('cap rate')
     plt.ylim(0., 10.2)
     fig, ax = plt.gcf(), plt.gca()
     ax.spines['top'].set_visible(False)

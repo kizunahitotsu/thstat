@@ -1,4 +1,3 @@
-import PySimpleGUI as sg
 import stat_config
 import time
 import constants
@@ -70,37 +69,31 @@ class StatDatabase:
         """
         self.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT].pop()
 
+    def cap_rates_from_results(self, results, stage_id):
+        chapters_list = self.get_config_stage_dict()[stage_id]
+        # for the following lists, each has one element for every chapter in the stage
+        cap = [0] * len(chapters_list)
+        attempt = [0] * len(chapters_list)
+        for run in results:
+            for i, success in enumerate(run[stage_id]):
+                cap[i] += success
+                attempt[i] += 1
+        rate = [cap[i] / attempt[i] if attempt[i] > 0 else 0 for i in range(len(chapters_list))]
+        return cap, attempt, rate
+
     def aggregate_cap_rates(self, stage_id):
         """
         aggregate the capture rates
         :return: ((sessions cap, sessions attempt, sessions rate), (total cap, total attempt, total rate))
         """
-        chapters_list = self.get_config_stage_dict()[stage_id]
-        sessions_cap = []
-        sessions_attempt = []
-        sessions_rate = []
-        for session in self.data[constants.DATA_DATA]:
-            capture_list = [0] * len(chapters_list)
-            attempt_list = [0] * len(chapters_list)
-            for i, run in enumerate(session[constants.DATA_RESULT]):
-                for j, success in enumerate(run[stage_id]):
-                    capture_list[j] += success
-                    attempt_list[j] += 1
-            capture_rate = [capture_list[i] / attempt_list[i] if attempt_list[i] > 0 else 0 for i in range(len(capture_list))]
-            sessions_cap.append(capture_list)
-            sessions_attempt.append(attempt_list)
-            sessions_rate.append(capture_rate)
-
+        sessions_cap, sessions_attempt, sessions_rate = [], [], []
+        for session_idx in range(len(self.data[constants.DATA_DATA])):
+            cap, attempt, rate = self.cap_rates_from_results(self.collect_game_results((session_idx, )), stage_id)
+            sessions_cap.append(cap)
+            sessions_attempt.append(attempt)
+            sessions_rate.append(rate)
         # calculate total cap info as three single lists
-        total_cap = [0] * len(chapters_list)
-        total_attempt = [0] * len(chapters_list)
-        total_rate = [0] * len(chapters_list)
-        for i in range(len(sessions_cap)):
-            for j in range(len(sessions_cap[i])):
-                total_cap[j] += sessions_cap[i][j]
-                total_attempt[j] += sessions_attempt[i][j]
-        for i in range(len(total_cap)):
-            total_rate[i] = total_cap[i] / total_attempt[i] if total_attempt[i] > 0 else 0
+        total_cap, total_attempt, total_rate = self.cap_rates_from_results(self.collect_all_game_results(), stage_id)
 
         return (sessions_cap, sessions_attempt, sessions_rate), (total_cap, total_attempt, total_rate)
 
@@ -167,3 +160,30 @@ class StatDatabase:
         :return: the index of the last game session
         """
         return len(self.data[constants.DATA_DATA]) - 1
+
+    def get_stages_cap_rates(self):
+        """
+        get the capture rates for all stages
+        :return: the capture rates dictionary for stages
+        """
+        config_stages = self.get_config_stage_dict()
+        stages_cap_rates = {}
+        # add the stage name to the layout
+        for stage_id in config_stages:
+            cap_rates = self.aggregate_cap_rates(stage_id)
+            stages_cap_rates[stage_id] = cap_rates
+        return stages_cap_rates
+
+    def collect_game_results(self, session_idx_range):
+        """
+        collect the game results from the specified sessions as a single matrix
+        :param session_idx_range: the range of the sessions
+        :return: a list of game results
+        """
+        game_results = []
+        for session_idx in session_idx_range:
+            game_results += self.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT]
+        return game_results
+
+    def collect_all_game_results(self):
+        return self.collect_game_results(range(len(self.data[constants.DATA_DATA])))

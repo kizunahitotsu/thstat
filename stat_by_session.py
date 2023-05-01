@@ -128,12 +128,12 @@ def get_graph_layout(database, results, graph_option):
     layout_dict, graph_arr_dict = {}, {}
     graph_option_idx = graph_option[0]
     if graph_option_idx == 0:
-        sigma = graph_option[1]
+        sigma = graph_option[2]
         for stage_id in config_stages:
             chapters_list = config_stages[stage_id]
             tab_layout = []
             graph_arr = []
-            for i in range(len(chapters_list)):
+            for i in range(-1, len(chapters_list)):
                 graph_key = f'-GRAPH-{stage_id}-{i}-'
                 im_data = plt_im_bytes_moving_average(chapters_list, stage_id, results, sigma, i)
                 width, height = im_data[1], im_data[2]
@@ -144,7 +144,8 @@ def get_graph_layout(database, results, graph_option):
                     background_color='white',
                     key=graph_key,
                 )
-                tab_layout.append([sg.Tab(f'Chapter {i}', [[graph]])])
+                tab_text = 'NMNB' if i == -1 else f'ch.{i}'
+                tab_layout.append([sg.Tab(tab_text, [[graph]])])
                 graph_arr.append((graph, graph_key, im_data))
 
             graph_layout = [[sg.TabGroup(tab_layout)]]
@@ -201,7 +202,7 @@ def show_session_stat_menu(init_info, database, session_idx, graph_option):
     (level_misses_arr, total_misses), (level_nn_rate_arr, total_nn_rate) = \
         database.compute_advanced_summary_statistics(stages_cap_rates)
 
-    results = database.collect_all_game_results()
+    results = database.filter_results_by_attributes(graph_option[1])
     layout_dict, graph_arr_dict = get_graph_layout(database, results, graph_option)
     for stage_id in config_stages:
         stage_idx = database.get_stage_idx_from_id(stage_id)

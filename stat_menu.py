@@ -18,6 +18,15 @@ def select_session_menu(init_info, database):
 
     continue_flag = True
     graph_option_idx = 0  # by default, we select radio 1
+
+    default_values_dict = {}
+    attributes_dict = {}
+    for key in database.get_all_dropdown_attribute_name():
+        attr = database.config[key]
+        ui_save_key = attr['SaveKey']
+        attributes_dict[key] = (['all'] + attr['Values'], ui_save_key)
+        default_values_dict[key] = 'all'
+
     while continue_flag:
         # show the list of all recorded gameplay sessions
         items = []
@@ -43,6 +52,12 @@ def select_session_menu(init_info, database):
                                                  default=is_selected,
                                                  enable_events=True)] +
                                        graph_option_layout_decoration[i])
+        for key in attributes_dict:
+            legal_values, ui_save_key = attributes_dict[key]
+            dropdown = sg.DropDown(legal_values, key=f'-attr-{key}-', default_value=default_values_dict[key],
+                                   enable_events=True, readonly=True, size=(20, 1))
+            graph_option_layout.append([sg.Text(f'{key}: '), dropdown])
+
         layout = [[sg.Text('Select a session to view statistics')],
                   [sg.Listbox(values=items, default_values=default_values,
                               select_mode=sg.LISTBOX_SELECT_MODE_SINGLE,
@@ -58,16 +73,25 @@ def select_session_menu(init_info, database):
             elif event.startswith('Radio'):
                 graph_option_idx = int(event.split(' ')[1]) - 1
                 break
+            elif event.startswith('-attr-'):
+                key = event[6:-1]
+                default_values_dict[key] = values[event]
+                break
             elif event in [SHOW_STAT_STR, REMOVE_SESSION_STR]:
                 break
 
         # create graph information from the selected radio buttons
         graph_option = None
         if event == SHOW_STAT_STR:
+            attribute_constraints = []
+            for key in attributes_dict:
+                selected_value = default_values_dict[key]
+                if selected_value != 'all':
+                    attribute_constraints.append((key, selected_value))
             if graph_option_idx == 0:
-                graph_option = (graph_option_idx, float(values['-SIGMA-']))
+                graph_option = (graph_option_idx, attribute_constraints, float(values['-SIGMA-']))
             else:
-                graph_option = (graph_option_idx, )
+                graph_option = (graph_option_idx, attribute_constraints)
 
         window.close()
         if event in [SHOW_STAT_STR, REMOVE_SESSION_STR]:

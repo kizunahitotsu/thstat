@@ -187,3 +187,21 @@ class StatDatabase:
 
     def collect_all_game_results(self):
         return self.collect_game_results(range(len(self.data[constants.DATA_DATA])))
+
+    def filter_results_by_attributes(self, attribute_constraints):
+        """
+        filter the game results by the specified attributes
+        :param attribute_constraints: an array of attributes (SaveKey, Value)
+        :return: a list of game results
+        """
+        game_results = []
+        for session_idx in range(len(self.data[constants.DATA_DATA])):
+            session = self.data[constants.DATA_DATA][session_idx]
+            flag = True
+            for attribute in attribute_constraints:
+                if session['Attributes'][attribute[0]] != attribute[1]:
+                    flag = False
+                    break
+            if flag:
+                game_results += self.data[constants.DATA_DATA][session_idx][constants.DATA_RESULT]
+        return game_results

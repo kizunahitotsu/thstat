@@ -4,6 +4,7 @@ from io import BytesIO
 import stat_database
 import math
 import PySimpleGUI as sg
+import matplotlib.ticker as ticker
 
 
 # plt.rcParams['font.sans-serif'] = ['SimHei']
@@ -33,14 +34,20 @@ def create_session_text_statistics_layout(database, session_idx):
 
 
 def plt_im_bytes_session_capture_rates(chapters_list, session_rate):
-    plt.bar(range(1, len(chapters_list) + 1), session_rate)
-    plt.xlabel('session')
-    plt.ylabel('NN rate')
-    plt.ylim(0., 1.)
+    plt.xlabel('chapter')
+    plt.ylabel('danger')
+    plt.ylim(0., 1.02)
+    fig, ax = plt.gcf(), plt.gca()
+    ax.spines['top'].set_visible(True)
+    ax.spines['right'].set_visible(True)
+    ax.set_facecolor('white')
+    ax.yaxis.set_ticks([0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1])
+    ax.yaxis.grid(color='gray', linestyle='dashed')
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+    plt.bar(range(1, len(chapters_list) + 1), [1 - rate for rate in session_rate], color='red')
     with BytesIO() as output:
         plt.savefig(output, format='PNG')
         im_bytes = output.getvalue()
-    fig = plt.gcf()
     width, height = fig.get_size_inches() * fig.get_dpi()
     plt.cla()
     return im_bytes, width, height
@@ -89,14 +96,21 @@ def plt_im_bytes_moving_average(chapters_list, stage_id, results, sigma, chapter
             averaged_rates = total_cap / total_attempt
         averaged_rates_per_chapter.append(averaged_rates)
 
+    # reference: https://stackoverflow.com/questions/12608788/changing-the-tick-frequency-on-the-x-or-y-axis
     plt.xlabel('Time')
     plt.ylabel('NN rate')
-    plt.ylim(0., 1.)
-    plt.plot(range(len(results)), averaged_rates_per_chapter)
+    plt.ylim(0., 10.2)
+    fig, ax = plt.gcf(), plt.gca()
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_facecolor('black')
+    ax.yaxis.set_ticks([0, .5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9.5, 10])
+    ax.yaxis.grid(color='gray', linestyle='dashed')
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+    plt.plot(range(len(results)), [rate * 10 for rate in averaged_rates_per_chapter], color='yellow')
     with BytesIO() as output:
         plt.savefig(output, format='PNG')
         im_bytes = output.getvalue()
-    fig = plt.gcf()
     width, height = fig.get_size_inches() * fig.get_dpi()
     plt.cla()
     return im_bytes, width, height

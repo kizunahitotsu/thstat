@@ -32,7 +32,7 @@ def select_session_menu(init_info, database):
 
         graph_option_layout_decoration = [
             [sg.Text('Moving average over time'), sg.Input(key='-SIGMA-', default_text='2.0')],
-            [sg.Text('Capture rate by chapter')]
+            [sg.Text('Level of danger by chapter')]
         ]
         graph_option_layout = [[sg.Text('Select a graph option')]]
         for i in range(2):
